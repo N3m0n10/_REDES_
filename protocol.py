@@ -1,0 +1,1 @@
+""" Funções compartilhadas: client e server tem acesso a essas funções """

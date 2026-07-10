@@ -1,0 +1,34 @@
+import magic
+
+def identificar_arquivo(caminho_arquivo):
+    # Detecta o tipo MIME e a descrição do arquivo
+    tipo_mime = magic.from_file(caminho_arquivo, mime=True)
+    descricao = magic.from_file(caminho_arquivo)
+    
+    # Mapeia tipos MIME para extensões comuns
+    extensoes = {
+        'image/jpeg': '.jpg',
+        'image/png': '.png',
+        'image/gif': '.gif',
+        'image/bmp': '.bmp',
+        'image/webp': '.webp',
+        'application/pdf': '.pdf',
+        'application/zip': '.zip',
+        'text/plain': '.txt',
+        # Adicione mais conforme necessário
+    }
+    
+    extensao = extensoes.get(tipo_mime, f'.{tipo_mime.split("/")[-1]}')
+    
+    return tipo_mime, descricao, extensao
+
+# Exemplo de uso
+caminho = 'message.bin'
+tipo, desc, ext = identificar_arquivo(caminho)
+print(f"Tipo MIME: {tipo}")
+print(f"Descrição: {desc}")
+print(f"Extensão sugerida: {ext}")
+
+# Renomear o arquivo com a extensão correta
+import os
+os.rename(caminho, f"{caminho[:-4]}{ext}")
