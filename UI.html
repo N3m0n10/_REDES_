@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Simulador UDP Confiável</title>
+
+<style>
+
+body{
+    font-family: Arial, Helvetica, sans-serif;
+    background:#f4f6f8;
+    margin:0;
+    padding:20px;
+}
+
+h1,h2{
+    color:#1f2937;
+}
+
+.container{
+    max-width:1400px;
+    margin:auto;
+}
+
+.row{
+    display:flex;
+    gap:20px;
+    margin-bottom:20px;
+}
+
+.card{
+    background:white;
+    border-radius:10px;
+    padding:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.1);
+    flex:1;
+}
+
+.node{
+    text-align:center;
+    padding:15px;
+    border:2px solid #374151;
+    border-radius:10px;
+    font-weight:bold;
+}
+
+.flow{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:20px;
+    margin-top:20px;
+}
+
+.arrow{
+    font-size:28px;
+}
+
+.frame{
+    display:grid;
+    grid-template-columns:1fr 2fr 1fr 2fr 4fr;
+    border:1px solid #444;
+    text-align:center;
+}
+
+.frame div{
+    padding:10px;
+    border-right:1px solid #444;
+}
+
+.frame div:last-child{
+    border-right:none;
+}
+
+.log{
+    background:#111827;
+    color:#10b981;
+    font-family:monospace;
+    height:250px;
+    overflow:auto;
+    padding:15px;
+    border-radius:10px;
+}
+
+.button-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+}
+
+button{
+    padding:12px;
+    font-size:15px;
+    cursor:pointer;
+}
+
+.good{
+    color:green;
+    font-weight:bold;
+}
+
+.bad{
+    color:red;
+    font-weight:bold;
+}
+
+.timeline{
+    display:flex;
+    justify-content:space-between;
+    margin-top:20px;
+}
+
+.step{
+    flex:1;
+    text-align:center;
+    border:1px solid #ccc;
+    margin:4px;
+    padding:10px;
+    border-radius:8px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Protocolo Confiável sobre UDP</h1>
+
+<div class="row">
+
+<div class="card">
+
+<h2>Arquitetura</h2>
+
+<div class="flow">
+
+<div class="node">
+CLIENTE
+</div>
+
+<div class="arrow">
+➡
+</div>
+
+<div class="node">
+REDE UDP
+</div>
+
+<div class="arrow">
+➡
+</div>
+
+<div class="node">
+SERVIDOR
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="card">
+
+<h2>Estrutura do Frame</h2>
+
+<div class="frame">
+
+<div>Tipo<br>2 bits</div>
+<div>Tamanho<br>10 bits</div>
+<div>Seq<br>3 bits</div>
+<div>Checksum<br>16 bits</div>
+<div>Payload</div>
+
+</div>
+
+<br>
+
+<p><b>Tipos:</b></p>
+
+<ul>
+<li>01 → Pedido de conexão</li>
+<li>11 → ACK / Dados intermediários</li>
+<li>10 → NACK</li>
+<li>00 → FIN (último frame)</li>
+</ul>
+
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="card">
+
+<h2>Handshake</h2>
+
+<div class="timeline">
+
+<div class="step">
+Cliente<br><br>
+PEDE_REQ
+</div>
+
+<div class="step">
+Servidor<br><br>
+ACK
+</div>
+
+<div class="step">
+Cliente<br><br>
+ACK
+</div>
+
+<div class="step good">
+Conectado
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="card">
+
+<h2>Janela Deslizante (BUFFER = 4)</h2>
+
+<pre>
+
+Base = 0
+
+[0] [1] [2] [3]
+ |   |   |   |
+ v   v   v   v
+
+ACK0 ACK1 ACK2 ACK3
+
+Janela desliza →
+
+[4] [5] [6] [7]
+
+</pre>
+
+</div>
+
+<div class="card">
+
+<h2>Simulação de Erros</h2>
+
+<div class="button-grid">
+
+<button>Checksum Inválido</button>
+
+<button>Perda de Pacote</button>
+
+<button>Timeout</button>
+
+<button>Fora de Ordem</button>
+
+</div>
+
+<br>
+
+<ul>
+<li>Checksum incorreto → NACK</li>
+<li>Pacote perdido → Timeout</li>
+<li>Timeout → Retransmissão</li>
+<li>Fora de ordem → Reordenação no servidor</li>
+</ul>
+
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="card">
+
+<h2>Fluxo de Recuperação</h2>
+
+<pre>
+
+Frame 2
+   |
+   v
+Erro de Checksum
+   |
+   v
+Servidor envia NACK
+   |
+   v
+Cliente retransmite
+   |
+   v
+ACK recebido
+
+</pre>
+
+</div>
+
+<div class="card">
+
+<h2>Log da Execução</h2>
+
+<div class="log">
+
+[CLIENTE] Conectando...
+
+[CLIENTE] Frame 0 enviado
+
+[SERVIDOR] ACK 0
+
+[CLIENTE] Frame 1 enviado
+
+[SERVIDOR] ACK 1
+
+[CLIENTE] Frame 2 enviado
+
+[SERVIDOR] Checksum inválido
+
+[SERVIDOR] NACK 2
+
+[CLIENTE] Retransmitindo frame 2
+
+[SERVIDOR] ACK 2
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>
